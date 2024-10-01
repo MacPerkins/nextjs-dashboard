@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { CustomerField, InvoiceForm } from '@/app/lib/definitions';
 import {
   CheckIcon,
@@ -9,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateInvoice } from '@/app/lib/actions';
+import { updateInvoice, State } from '@/app/lib/actions'; // Import State
 
 export default function EditInvoiceForm({
   invoice,
@@ -18,9 +19,25 @@ export default function EditInvoiceForm({
   invoice: InvoiceForm;
   customers: CustomerField[];
 }) {
-  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  const initialState: State = { message: null, errors: {} }; // Define the initial state
+  const [state, setState] = useState<State>(initialState); // Use useState with the initial state
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const response = await updateInvoice(invoice.id, state, formData); // Pass `state` as the second argument
+    if (response.errors) {
+      // Handle errors if they exist
+      setState({ ...state, errors: response.errors });
+    } else {
+      // Handle success
+      console.log(response.message);
+    }
+  };
+
   return (
-    <form action={updateInvoiceWithId}>
+    <form onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
